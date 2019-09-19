@@ -20,10 +20,13 @@ void averageFiltering_opencvCommand(int value, void *userData) {
 	string &win_name = *(static_cast<string*>(userData));
 
 	if (value <= 0) {
-		cout << "Kernel size cannot be smaller than 0" <<endl;
-		return;
+		cout << "Kernel size cannot be smaller than 0 kernel size will be 1" <<endl;
+		value = 1;
 	}
 
+	if (value % 2 == 0) {
+		value -= 1;
+	}
 	Size ksize = Size(value, value);
 
 	start_time = clock();
@@ -40,13 +43,27 @@ void averageFiltering_opencvCommand(int value, void *userData) {
 }
 
 void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor, int BorderType){
-	double kernelConst = 1 / (ksize.height) * (ksize.width);
-	Mat kernel = Mat(ksize.height,ksize.width,CV_8UC1,Scalar(kernelConst));
-	for (int i = 0; i < ksize.height; i++) {
-		for (int j = 0; j < ksize.width; j++) {
-			
+	double kernelConst = 1.0 / ((ksize.height) * (ksize.width));
+	//Mat kernel = Mat(ksize.width,ksize.height,CV_8UC1);
+
+	int ki = 0;
+	for (int i = 0; i < input_im.rows; i++) {
+		for (int j = 0; j < input_im.cols; j++) {
+			double sum = 0;
+
+			for (ki = i - (ksize.height / 2); ki <= i + (ksize.height / 2); ki++) {
+				for (int kj = j - (ksize.width / 2); kj <= j + (ksize.width / 2); kj++) {
+					if (ki < 0 || ki > input_im.rows - 1 || kj < 0 || kj > input_im.cols-1) {
+						sum += 0;
+						continue;
+					}
+					sum += input_im.at<uchar>(ki, kj);
+				}
+			}
+			output_dst.at<uchar>(i, j) = sum * kernelConst;
 		}
 	}
+	//filter2D(src,dst, CV_8UC1,kernel,Point(-1,-1),BorderType);
 }
 
 int main(int argc, char *argv[])
@@ -63,6 +80,7 @@ int main(int argc, char *argv[])
 		cout << "File open Error!" << endl;
 		return -1;
 	}
+	output_dst = Mat(input_im.rows,input_im.cols, CV_8UC1);
 	cout << "Image size :" << input_im.size() << ", Type:" << type2str(input_im.type()) << endl;
 
 	string window_name = "Image Average filter Window";
@@ -74,6 +92,7 @@ int main(int argc, char *argv[])
 
 	//flag setting
 	flag = atoi(argv[2]);
+	
 
 	createTrackbar("AverageFilter", window_name, &start_value, max_value, averageFiltering_opencvCommand, static_cast<void*>(&window_name));
 
