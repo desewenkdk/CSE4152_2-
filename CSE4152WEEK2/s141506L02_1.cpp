@@ -36,6 +36,10 @@ void averageFiltering_opencvCommand(int value, void *userData) {
 	else if (flag == 2) {
 		userdefined_blur(input_im, output_dst, ksize, Point(-1,-1), BORDER_CONSTANT);
 	}
+	else {
+		cout << "Wrong flag" << endl;
+		return;
+	}
 	end_time = clock();
 	cout << "kernel value : " << value << ", Exec Time : " << (double)(end_time - start_time) << " (msec)" << endl;
 
@@ -51,6 +55,7 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 		for (int j = 0; j < input_im.cols; j++) {
 			double sum = 0;
 
+			//brute force
 			for (ki = i - (ksize.height / 2); ki <= i + (ksize.height / 2); ki++) {
 				for (int kj = j - (ksize.width / 2); kj <= j + (ksize.width / 2); kj++) {
 					if (ki < 0 || ki > input_im.rows - 1 || kj < 0 || kj > input_im.cols-1) {
@@ -81,7 +86,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	output_dst = Mat(input_im.rows,input_im.cols, CV_8UC1);
-	cout << "Image size :" << input_im.size() << ", Type:" << type2str(input_im.type()) << endl;
+	cout << "Image size :" <<	input_im.size() << ", Type:" << type2str(input_im.type()) << endl;
 
 	string window_name = "Image Average filter Window";
 	namedWindow(window_name);
