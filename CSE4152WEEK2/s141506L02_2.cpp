@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	//flag setting
 	//flag = atoi(argv[2]); -> average filter에서 사용한 flag처리구문.
 
-	createTrackbar("medianBlurFilter", window_name, &start_value, max_value, medianBlurFiltering_opencvCommand, static_cast<void*>(&window_name));
+	createTrackbar("Median Filtering Window", window_name, &start_value, max_value, medianBlurFiltering_opencvCommand, static_cast<void*>(&window_name));
 
 	imshow(window_name, input_im);
 	waitKey(0);

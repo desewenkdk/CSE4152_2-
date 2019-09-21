@@ -30,15 +30,17 @@ void averageFiltering_opencvCommand(int value, void *userData) {
 	Size ksize = Size(value, value);
 
 	start_time = clock();
-	if (flag == 1)
-		blur(input_im, output_dst, ksize,Point(-1,-1), BORDER_CONSTANT);
-
-	else if (flag == 2) {
-		userdefined_blur(input_im, output_dst, ksize, Point(-1,-1), BORDER_CONSTANT);
-	}
-	else {
-		cout << "Wrong flag" << endl;
-		return;
+	switch (flag) {
+	case 1:
+		blur(input_im, output_dst, ksize, Point(-1, -1), BORDER_CONSTANT);
+		break;
+	case 2:
+		userdefined_blur(input_im, output_dst, ksize, Point(-1, -1), BORDER_CONSTANT);
+		break;
+	default:
+		cout << "flag exception : this message should not be shown" << endl;
+		exit(1);
+		break;
 	}
 	end_time = clock();
 	cout << "kernel value : " << value << ", Exec Time : " << (double)(end_time - start_time) << " (msec)" << endl;
@@ -75,7 +77,7 @@ int main(int argc, char *argv[])
 {
 	if (argc != 3) {
 		cout << "[프로그램 사용법]" << endl;
-		cout << "명령문 : ~.exe image_file flag<ent>" << endl;
+		cout << "명령문 : ~.exe lena.bpm flag<ent>\nflag : 1 - opencv function 사용\nflag : 2 - loop로 brute force 사용" << endl;
 		return 0;
 	}
 	//파일 주소는 argv[1]로 들어옴
@@ -97,10 +99,12 @@ int main(int argc, char *argv[])
 
 	//flag setting
 	flag = atoi(argv[2]);
-	
-
-	createTrackbar("AverageFilter", window_name, &start_value, max_value, averageFiltering_opencvCommand, static_cast<void*>(&window_name));
-
+	if (flag == 1 || flag == 2) {
+		createTrackbar("Average Filtering Window", window_name, &start_value, max_value, averageFiltering_opencvCommand, static_cast<void*>(&window_name));
+	}
+	else {
+		cout << "Wrong flag!!" << endl;
+	}
 	imshow(window_name, input_im);
 	waitKey(0);
 
