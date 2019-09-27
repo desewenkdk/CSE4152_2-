@@ -77,7 +77,7 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 	*/
 
 	/**** Moving Average ****/
-	ki = 0;
+	
 
 	//큐의 원소는 커널의 row?col수만큼 존재한다.
 	queue<double> verQ;
@@ -124,7 +124,7 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 						continue;
 					}
 					else {
-						tmp_colSum += input_im.at<uchar>(kj, ki);
+						tmp_colSum += input_im.at<uchar>(ki, kj);
 					}
 				}
 				verQ.push(tmp_colSum);//새로 계산된col의 합을 넣고
@@ -135,14 +135,14 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 			queue<double> tmpQ;
 			while (!verQ.empty()) {
 				totalSum += verQ.front();
-				tmpQ.push(verQ.front());
+				tmpQ.push(verQ.front());//큐를 계속 써야하니 전부 비워버리면 안됨;;
 				verQ.pop();
 			}
 			output_dst.at<uchar>(i, j) = totalSum * kernelConst;
 			swap(verQ, tmpQ);
 			swap(tmpQ, emptyQ);
 		}
-
+		cout << totalSum * kernelConst;
 	}
 	//filter2D(src,dst, CV_8UC1,kernel,Point(-1,-1),BorderType);
 
