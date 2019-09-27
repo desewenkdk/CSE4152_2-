@@ -72,6 +72,22 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 
 		}
 	}
+
+	ki = 0;
+
+	//각 큐의 원소는 해당 커널의 세로줄수 / 가로줄 수 만큼이 존재하도록 한다.
+	queue<double> verQ;
+	queue<double> horQ;
+
+	//커널의 중심이 어쨋든 이미지 위를 전부 다 돌긴 해야하니까 기본 2중반복문.
+	for (int i = 0; i < input_im.rows; i++) {
+		int kt = i - (ksize.height / 2); int kb = i + (ksize.height / 2);
+		//좌-우로 끝까지 이동한 후에는, 커널이 아래로 이동. 즉, 아래로 가면서 아랫줄 하나 추가, 맨 윗 줄 제거.=> 가로큐
+		for (int j = 0; j < input_im.cols; j++) {
+			//col단위로 한 줄 한 줄 더해서 큐로 관리하자. -> 세로큐
+			for()
+		}
+	}
 	//filter2D(src,dst, CV_8UC1,kernel,Point(-1,-1),BorderType);
 
 	//moving Average
