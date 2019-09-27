@@ -4,6 +4,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <queue>
 
 using namespace std;
 using namespace cv;
@@ -53,7 +54,7 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 	//Mat kernel = Mat(ksize.width,ksize.height,CV_8UC1);
 
 	int ki = 0;
-	for (int i = 0; i < input_im.rows; i++) {
+	for (int i = 0; i < input_im.rows; i++) { //(i,j):커널의 중심 좌표.
 		for (int j = 0; j < input_im.cols; j++) {
 			double sum = 0;
 
@@ -68,9 +69,17 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 				}
 			}
 			output_dst.at<uchar>(i, j) = sum * kernelConst;
+
 		}
 	}
 	//filter2D(src,dst, CV_8UC1,kernel,Point(-1,-1),BorderType);
+
+	//moving Average
+	queue<double> colSum;
+
+	for (int i = 0; i < input_im.rows; i++) {
+		
+	}
 }
 
 int main(int argc, char *argv[])
