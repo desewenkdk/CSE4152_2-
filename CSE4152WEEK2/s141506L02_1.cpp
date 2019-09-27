@@ -36,7 +36,7 @@ void averageFiltering_opencvCommand(int value, void *userData) {
 		blur(input_im, output_dst, ksize, Point(-1, -1), BORDER_CONSTANT);
 		break;
 	case 2:
-		userdefined_blur(input_im, output_dst, ksize, Point(-1, -1), BORDER_CONSTANT);
+		userdefined_blur(input_im, output_dst, ksize, Point(-1, -1), BORDER_DEFAULT);
 		break;
 	default:
 		cout << "flag exception : this message should not be shown" << endl;
@@ -75,75 +75,58 @@ void userdefined_blur(InputArray src, OutputArray dst, Size ksize, Point anchor,
 		}
 	}
 	*/
-
-	/**** Moving Average ****/
 	
+	for (int i = 0; i < input_im.rows; i++) { //(i,j):커널의 중심 좌표.
+		int lboarder, rboarder, tboarder, bboarder;
 
-	//큐의 원소는 커널의 row?col수만큼 존재한다.
-	queue<double> verQ;
-	//queue<uchar> horQ;
-	double totalSum;
-
-
-	//커널의 중심이 어쨋든 이미지 위를 전부 다 돌긴 해야하니까 기본 2중반복문.
-	for (int i = 0; i < input_im.rows; i++) {
-		double tmp_colSum = 0;
-		
-		//횡으로 다 돌고 돌아오면 colQ초기화 후 다시계산.
-		queue<double> emptyQ;
-		swap(verQ, emptyQ);
-
+		tboarder = (i - (ksize.height / 2) < 0 ? 0 : i - (ksize.height / 2));
+		bboarder = (i + (ksize.height / 2) >= input_im.rows ? input_im.rows-1 : i + (ksize.height / 2));
+		double prevSum = 0;
 		for (int j = 0; j < input_im.cols; j++) {
-			totalSum = 0;
-			tmp_colSum = 0;
+			double sum = 0;
+			double colSum = 0;
+			lboarder = (j - (ksize.width / 2) < 0 ? 0 : j - (ksize.width / 2));
+			rboarder = (j + (ksize.width / 2) >= input_im.cols ? input_im.cols-1 : j + (ksize.width / 2));
 
-
+			//brute force
 			if (j == 0) {
-				//좌-우로 끝까지 이동한 후에는, 커널이 아래로 이동. 즉, 아래로 한 칸 이동
-				for (int kj = -(ksize.width / 2); kj <= (ksize.width / 2); kj++) {//커널이 한방향으로 다 돌고 다시 돌아왔을 때 첫 커널연산값
-					if (kj < 0 || kj > input_im.cols-1) {
-						verQ.push(tmp_colSum);
-						continue;
-					}
-					else {
-						for (int ki = 0; ki <= i + (ksize.height / 2); ki++) {
-							tmp_colSum += input_im.at<uchar>(ki, kj);
-						}
-						verQ.push(tmp_colSum);
+				for (ki = lboarder; ki <= rboarder; ki++) {
+					for (int kj = tboarder; kj <= bboarder; kj++) {
+						sum += input_im.at<uchar>(ki, kj);
 					}
 				}
-
-	
+				 prevSum = sum * kernelConst;
+				 output_dst.at<uchar>(i, 0) = prevSum;
 			}
-			//col단위로 한 줄 한 줄 더해서 큐로 관리하자. -> 세로큐
+
 			else {
-				int kj = j + (ksize.width / 2);
-				for (int ki = i - (ksize.height / 2); ki <= i + (ksize.height / 2); ki++) {
-					if (ki < 0 || ki > input_im.rows - 1) {
-						tmp_colSum += 0;
-						continue;
-					}
-					else {
-						tmp_colSum += input_im.at<uchar>(ki, kj);
+				if (j - (ksize.width / 2) <= 0) {//왼쪽 열 합을 빼줄 필요가 없는 경우.
+					for (int h = tboarder; h <= bboarder; h++){
+						colSum += input_im.at<uchar>(h, rboarder);
+						
 					}
 				}
-				verQ.push(tmp_colSum);//새로 계산된col의 합을 넣고
-				verQ.pop();//기존 col중 가장 width값이 작은 col의 합은 제거.
-			}
+				else if ((j - (ksize.width / 2) > 0) && (j + (ksize.width / 2) < input_im.cols)) {
+					for (int h = tboarder; h <= bboarder; h++) {
+						colSum = colSum + input_im.at<uchar>(h, rboarder) - input_im.at<uchar>(h,lboarder-1);
+						
+					}
+				}
+				else if(j + (ksize.width / 2) >= input_im.cols) {
+					for (int h = tboarder; h <= bboarder; h++) {
+						colSum += (-1)*(input_im.at<uchar>(h, lboarder - 1));
+						
+					}
+				}
 
-			//queue에 저장된 col합들을 가지고 커널연산.
-			queue<double> tmpQ;
-			while (!verQ.empty()) {
-				totalSum += verQ.front();
-				tmpQ.push(verQ.front());//큐를 계속 써야하니 전부 비워버리면 안됨;;
-				verQ.pop();
-			}
-			output_dst.at<uchar>(i, j) = totalSum * kernelConst;
-			swap(verQ, tmpQ);
-			swap(tmpQ, emptyQ);
+				prevSum = prevSum + colSum;
+
+				output_dst.at<uchar>(i, j) = (prevSum) * kernelConst;
+				//prevSum = output_dst.at<uchar>(i, j);
+			}	
 		}
-		cout << totalSum * kernelConst;
 	}
+	
 	//filter2D(src,dst, CV_8UC1,kernel,Point(-1,-1),BorderType);
 
 }
